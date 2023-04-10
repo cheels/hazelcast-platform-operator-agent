@@ -1,0 +1,18 @@
+commitish: 'main'
+replacers:
+  - search: '/(<!.*)\s+/gm'
+    replace: ''
+  - search: '/\[(.*?)\]/g'
+    replace: ''
+  - search: '^Add'
+    replace: 'Added'
+  - search: 'feat:'
+    replace: ''
+  - search: 'fix:'
+    replace: ''
+  - search: 'enhancement:'
+    replace: ''
+change-template: '- $TITLE (#$NUMBER)$BODY'
+template: |
+  # Release notes
+  $CHANGES

@@ -1,23 +1,27 @@
 name: "tagged-release"
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
 
 jobs:
-  tagged-release:
-    name: "Tagged Release"
-    runs-on: "ubuntu-latest"
-
+  create_release_notes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      RELEASE_VERSION: ${{ github.event.inputs.RELEASE_VERSION }}
     steps:
-      # ...
-      - name: "Build & test"
+      - name: Validate version
         run: |
-          echo "done!"
+          NUMBER='(0|[1-9][0-9]*)'
+          echo ${RELEASE_VERSION} | egrep "^$NUMBER.$NUMBER(.$NUMBER)?$"
 
-      - uses: "marvinpinto/action-automatic-releases@latest"
+      - uses: release-drafter/release-drafter@v5
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          prerelease: false
+          tag: v${{ inputs.RELEASE_VERSION }}
+          name: ${{ inputs.RELEASE_VERSION }}
+          config-name: release-drafter-config.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
