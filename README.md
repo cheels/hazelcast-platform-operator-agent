@@ -2,7 +2,7 @@
 
 <img align="right" src="https://hazelcast.com/brand-assets/files/hazelcast-stacked-flat-sm.png">
 
-Platform Operator Agent enables users to utilize Hazelcast Platform's features easily in Kubernetes environments WOW!. 
+Platform Operator Agent enables users to utilize Hazelcassdsdt Platform's features easily in Kubernetes environments WOW!. 
 The agent is implemented using [Go CDK](https://gocloud.dev/) for cloud providers support which allows the agent to become mostly cloud provider agnostic. Supported providers are: AWS, GCP and Azure.
 
 The agent is used by Hazelcast Platform Operator for supporting multiple features. The features are: 
