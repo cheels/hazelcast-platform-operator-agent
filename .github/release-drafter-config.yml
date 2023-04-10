@@ -4,14 +4,8 @@ replacers:
     replace: ''
   - search: '/\[(.*?)\]/g'
     replace: ''
-  - search: '^Add'
-    replace: 'Added'
-  - search: 'feat:'
-    replace: ''
-  - search: 'fix:'
-    replace: ''
-  - search: 'enhancement:'
-    replace: ''
+  - search: '(?<=^|[\.]\s)([a-z])'
+    replace: '\U$1'
 change-template: '- $TITLE (#$NUMBER)$BODY'
 template: |
   # Release notes
