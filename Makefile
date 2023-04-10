@@ -15,7 +15,7 @@ test:
 SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
 
-## LINTER
+## GO LINTER
 lint: lint-go
 
 LINTER_SETUP_DIR=$(shell pwd)/lintbin
