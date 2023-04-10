@@ -1,33 +1,23 @@
-name: Publish Agent Release
+name: "tagged-release"
+
 on:
-  workflow_dispatch:
-    inputs:
-      RELEASE_VERSION:
-        description: "Version in the form of X.Y[.Z]"
-        required: true
+  push:
+    tags:
+      - "v*"
 
 jobs:
-  publish-release-image:
-    name: Publish Agent Stable Version to Docker Hub
-    runs-on: ubuntu-latest
-    env:
-      RELEASE_VERSION: ${{ github.event.inputs.RELEASE_VERSION }}
+  tagged-release:
+    name: "Tagged Release"
+    runs-on: "ubuntu-latest"
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        
-      - name: Create a New Tag
-        id: newTag
+      # ...
+      - name: "Build & test"
         run: |
-          TAG_VERSION=v${RELEASE_VERSION}
-          git tag ${TAG_VERSION}
-          git push origin ${TAG_VERSION}
+          echo "done!"
 
-      - name: Create Release
-        if: steps.newTag.outcome == 'success'
-        uses: "marvinpinto/action-automatic-releases@latest"
+      - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
-          prerelease: true
+          prerelease: false
