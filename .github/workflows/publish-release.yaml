@@ -16,9 +16,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        
       - name: Create a New Tag
         id: newTag
-        if: steps.pushImage.outcome == 'success'
         run: |
           TAG_VERSION=v${RELEASE_VERSION}
           git tag ${TAG_VERSION}
