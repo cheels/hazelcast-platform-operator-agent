@@ -25,6 +25,7 @@ jobs:
           tag: v${{ inputs.RELEASE_VERSION }}
           name: ${{ inputs.RELEASE_VERSION }}
           config-name: release-drafter-config.yml
+          publish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
