@@ -16,42 +16,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Validate Version
-        run: |
-          NUMBER='(0|[1-9][0-9]*)'
-          echo ${RELEASE_VERSION} | egrep "^$NUMBER.$NUMBER(.$NUMBER)?$"
-
-      - name: Create Release Branch
-        id: newBranch
-        run: git checkout -b release/v${RELEASE_VERSION}
-
-      - name: Convert latest-snapshot To Release Version
-        run: |
-          sed -i "s|VERSION ?= latest-snapshot|VERSION ?= ${RELEASE_VERSION}|" Makefile
-
-      - name: Commit And Push Changes
-        run: |
-          git fetch origin main
-          git config user.email "devopshelm@hazelcast.com"
-          git config user.name "devOpsHelm"
-          git add Makefile
-          git commit --signoff -m "${RELEASE_VERSION}"
-
-          git push origin release/v${RELEASE_VERSION}
-
-      - name: Build Operator Agent Image
-        run: make docker-build
-
-      - name: Login to Docker Hub
-        run: |
-          echo "${{ secrets.DOCKERHUB_PASSWORD }}" \
-            | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
-      - name: Push Operator Agent Image
-        id: pushImage
-        run: make docker-push
-
       - name: Create a New Tag
         id: newTag
         if: steps.pushImage.outcome == 'success'
@@ -62,65 +26,8 @@ jobs:
 
       - name: Create Release
         if: steps.newTag.outcome == 'success'
-        uses: ncipollo/release-action@v1
+      - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          tag: v${{ env.RELEASE_VERSION }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          generateReleaseNotes: true
-
-      - name: Delete Release Branch
-        if: always() && steps.newBranch.outcome == 'success'
-        run: git push origin --delete release/v${RELEASE_VERSION}
-
-  update_agent_version_in_operator_repo:
-    name: Update Version And Create a PR in 'hazelcast-platform-operator' Repository
-    needs: 'publish-release-image'
-    runs-on: ubuntu-latest
-    env:
-      REPO_OWNER: hazelcast
-      REPO_NAME: hazelcast-platform-operator
-      RELEASE_VERSION: ${{ github.event.inputs.RELEASE_VERSION }}
-    steps:
-      - name: Checkout to hazelcast-platform-operator Repo
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}
-          ref: main
-          token: ${{ secrets.DEVOPS_GITHUB_TOKEN }}
-
-      - name: Update Agent Version At Platform Operator Source Code
-        run: |
-           sed -i "/Version of Hazelcast Platform Operator Agent.*/{n;s/default:.*/default:=\"${RELEASE_VERSION}\"/;}" ./api/v1alpha1/hazelcast_types.go
-           sed -i "/platform-operator-agent/{s/version:.*/version: \"${RELEASE_VERSION}\"}/;}" ./api/v1alpha1/hazelcast_types.go
-           make generate-bundle-yaml
-
-      - name: Commit And Push Changes
-        run: |
-          git config user.email "devopshelm@hazelcast.com"
-          git config user.name "devOpsHelm"
-          BRANCH_NAME=platform-operator-agent-v${RELEASE_VERSION}
-          git checkout -b $BRANCH_NAME
-
-          git add .
-          git commit --signoff -m "Bump 'platform-operator-agent' image version to ${RELEASE_VERSION}"
-          git push -u origin $BRANCH_NAME
-
-      - name: Create a PR
-        run: |
-          echo ${{ secrets.DEVOPS_GITHUB_TOKEN }} | gh auth login --with-token
-          gh pr create --title \
-          "Bump 'platform-operator-agent' image version to ${RELEASE_VERSION}" --body "" --repo ${REPO_OWNER}/${REPO_NAME} --reviewer hazelcast/cloud-native
-
-  slack_notify:
-    name: Slack Notify
-    needs: [ 'publish-release-image','update_agent_version_in_operator_repo' ]
-    if: always() &&  needs.publish-release-image.result != 'success'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: 8398a7/action-slack@f3635935f58910a6d6951b73efe9037c960c8c04
-        with:
-          fields: repo,commit,author,action,eventName,workflow
-          status: failure
-          channel: "#github-actions-log"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
