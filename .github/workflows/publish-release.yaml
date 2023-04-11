@@ -9,9 +9,6 @@ on:
 jobs:
   create_release_notes:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     env:
       RELEASE_VERSION: ${{ github.event.inputs.RELEASE_VERSION }}
     steps:
